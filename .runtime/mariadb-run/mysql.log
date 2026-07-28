@@ -1,0 +1,48 @@
+2026-07-28 15:53:02 0 [Note] Starting MariaDB 12.0.2-MariaDB source revision aab83aecdca15738d114cf5a2f223f1d12e4e6bd server_uid m589trC7dWbspiDoS9cGnQiDID0= as process 20446
+2026-07-28 15:53:02 0 [Note] InnoDB: Compressed tables use zlib 1.2.12
+2026-07-28 15:53:02 0 [Note] InnoDB: Number of transaction pools: 1
+2026-07-28 15:53:02 0 [Note] InnoDB: Using generic crc32 instructions
+2026-07-28 15:53:02 0 [Note] InnoDB: innodb_buffer_pool_size_max=128m, innodb_buffer_pool_size=128m
+2026-07-28 15:53:02 0 [Note] InnoDB: Completed initialization of buffer pool
+2026-07-28 15:53:02 0 [Note] InnoDB: End of log at LSN=47629
+2026-07-28 15:53:02 0 [Note] InnoDB: Opened 3 undo tablespaces
+2026-07-28 15:53:02 0 [Note] InnoDB: 128 rollback segments in 3 undo tablespaces are active.
+2026-07-28 15:53:02 0 [Note] InnoDB: Setting file './ibtmp1' size to 12.000MiB. Physically writing the file full; Please wait ...
+2026-07-28 15:53:02 0 [Note] InnoDB: File './ibtmp1' size is now 12.000MiB.
+2026-07-28 15:53:02 0 [Note] InnoDB: log sequence number 47629; transaction id 14
+2026-07-28 15:53:02 0 [Note] Plugin 'FEEDBACK' is disabled.
+2026-07-28 15:53:02 0 [Note] InnoDB: Loading buffer pool(s) from /Users/bardan_grg/Desktop/project/.runtime/mariadb-data/ib_buffer_pool
+2026-07-28 15:53:02 0 [Note] Plugin 'wsrep-provider' is disabled.
+2026-07-28 15:53:02 0 [Note] InnoDB: Buffer pool(s) load completed at 260728 15:53:02
+2026-07-28 15:53:03 0 [ERROR] Can't start server : Bind on unix socket: Operation not permitted
+2026-07-28 15:53:03 0 [ERROR] Do you already have another server running on socket: /Users/bardan_grg/Desktop/project/.runtime/mariadb-run/mysql.sock ?
+2026-07-28 15:53:03 0 [ERROR] Aborting
+2026-07-28 15:53:52 0 [Note] Starting MariaDB 12.0.2-MariaDB source revision aab83aecdca15738d114cf5a2f223f1d12e4e6bd server_uid m589trC7dWbspiDoS9cGnQiDID0= as process 20984
+2026-07-28 15:53:52 0 [Note] InnoDB: Compressed tables use zlib 1.2.12
+2026-07-28 15:53:52 0 [Note] InnoDB: Number of transaction pools: 1
+2026-07-28 15:53:52 0 [Note] InnoDB: Using generic crc32 instructions
+2026-07-28 15:53:52 0 [Note] InnoDB: innodb_buffer_pool_size_max=128m, innodb_buffer_pool_size=128m
+2026-07-28 15:53:52 0 [Note] InnoDB: Completed initialization of buffer pool
+2026-07-28 15:53:52 0 [Note] InnoDB: End of log at LSN=47629
+2026-07-28 15:53:52 0 [Note] InnoDB: Opened 3 undo tablespaces
+2026-07-28 15:53:52 0 [Note] InnoDB: 128 rollback segments in 3 undo tablespaces are active.
+2026-07-28 15:53:52 0 [Note] InnoDB: Setting file './ibtmp1' size to 12.000MiB. Physically writing the file full; Please wait ...
+2026-07-28 15:53:52 0 [Note] InnoDB: File './ibtmp1' size is now 12.000MiB.
+2026-07-28 15:53:52 0 [Note] InnoDB: log sequence number 47629; transaction id 14
+2026-07-28 15:53:52 0 [Note] Plugin 'FEEDBACK' is disabled.
+2026-07-28 15:53:52 0 [Note] InnoDB: Loading buffer pool(s) from /Users/bardan_grg/Desktop/project/.runtime/mariadb-data/ib_buffer_pool
+2026-07-28 15:53:52 0 [Note] Plugin 'wsrep-provider' is disabled.
+2026-07-28 15:53:52 0 [Note] InnoDB: Buffer pool(s) load completed at 260728 15:53:52
+2026-07-28 15:53:53 0 [Note] mariadbd: Event Scheduler: Loaded 0 events
+2026-07-28 15:53:53 0 [Note] mariadbd: ready for connections.
+Version: '12.0.2-MariaDB'  socket: '/tmp/travel-agency-mysql.sock'  port: 0  Homebrew
+2026-07-28 15:54:23 6 [Warning] Access denied for user 'technirvana'@'localhost' (using password: YES)
+2026-07-28 15:55:39 12 [Warning] Access denied for user 'bardan'@'localhost' (using password: YES)
+2026-07-28 15:57:12 0 [Note] mariadbd (initiated by: root[root] @ localhost []): Normal shutdown
+2026-07-28 15:57:13 0 [Note] InnoDB: FTS optimize thread exiting.
+2026-07-28 15:57:13 0 [Note] InnoDB: Starting shutdown...
+2026-07-28 15:57:13 0 [Note] InnoDB: Dumping buffer pool(s) to /Users/bardan_grg/Desktop/project/.runtime/mariadb-data/ib_buffer_pool
+2026-07-28 15:57:13 0 [Note] InnoDB: Buffer pool(s) dump completed at 260728 15:57:13
+2026-07-28 15:57:13 0 [Note] InnoDB: Removed temporary tablespace data file: "./ibtmp1"
+2026-07-28 15:57:13 0 [Note] InnoDB: Shutdown completed; log sequence number 69723; transaction id 41
+2026-07-28 15:57:13 0 [Note] mariadbd: Shutdown complete

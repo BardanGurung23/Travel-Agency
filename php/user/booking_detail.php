@@ -11,6 +11,8 @@ if (!isset($_SESSION['customer_id'])) {
 }
 
 include "../connection.php";
+require_once __DIR__ . '/../payment/payment_common.php';
+require_once __DIR__ . '/../payment/esewa.php';
 
 $customer_id = $_SESSION['customer_id'];
 $booking_id = $_GET['booking_id'] ?? 0;
@@ -29,6 +31,76 @@ $stmt->close();
 
 if (!$booking) {
     die("Booking not found!");
+}
+
+$payment_flash = $_SESSION['payment_flash'] ?? null;
+unset($_SESSION['payment_flash']);
+
+$payment_stmt = $conn->prepare(
+    "SELECT payment_id, provider, purchase_order_id, amount_paisa,
+            transaction_id, provider_status, status, initiated_at, completed_at
+     FROM payments WHERE booking_id = ? ORDER BY payment_id DESC LIMIT 1"
+);
+$payment_stmt->bind_param("i", $booking_id);
+$payment_stmt->execute();
+$latest_payment = $payment_stmt->get_result()->fetch_assoc();
+$payment_stmt->close();
+
+// eSewa UAT can return its signed success callback before the status endpoint
+// settles. Reconcile the latest unpaid eSewa attempt when the customer returns
+// to the booking page.
+if ($booking['payment_status'] !== 'paid'
+    && $latest_payment
+    && $latest_payment['provider'] === 'esewa'
+    && $latest_payment['status'] !== 'completed') {
+    try {
+        $expected_amount = esewa_amount((string) $booking['total_amount']);
+        $lookup = esewa_status_lookup($latest_payment['purchase_order_id'], $expected_amount);
+        $lookup_status = strtoupper(trim((string) ($lookup['status'] ?? 'UNKNOWN')));
+        $lookup_amount_paisa = (int) round(
+            ((float) ($lookup['total_amount'] ?? $lookup['totalAmount'] ?? 0)) * 100
+        );
+        $reference = trim((string) ($lookup['ref_id'] ?? $lookup['refId'] ?? ''));
+
+        if ($lookup_status === 'COMPLETE'
+            && $lookup_amount_paisa === (int) $latest_payment['amount_paisa']
+            && $reference !== '') {
+            $conn->begin_transaction();
+            $reconcile_stmt = $conn->prepare(
+                "UPDATE payments SET status='completed', provider_status='COMPLETE',
+                    transaction_id=?, completed_at=COALESCE(completed_at, CURRENT_TIMESTAMP),
+                    failure_message=NULL WHERE payment_id=?"
+            );
+            $reconcile_stmt->bind_param("si", $reference, $latest_payment['payment_id']);
+            $reconcile_stmt->execute();
+            $reconcile_stmt->close();
+
+            $reconcile_stmt = $conn->prepare(
+                "UPDATE bookings SET payment_status='paid',
+                    status=IF(status='pending', 'confirmed', status) WHERE booking_id=?"
+            );
+            $reconcile_stmt->bind_param("i", $booking_id);
+            $reconcile_stmt->execute();
+            $reconcile_stmt->close();
+            $conn->commit();
+
+            $booking['payment_status'] = 'paid';
+            if ($booking['status'] === 'pending') {
+                $booking['status'] = 'confirmed';
+            }
+            $latest_payment['status'] = 'completed';
+            $latest_payment['provider_status'] = 'COMPLETE';
+            $latest_payment['transaction_id'] = $reference;
+            $payment_flash = [
+                'type' => 'success',
+                'message' => 'eSewa payment verified. Transaction: ' . $reference,
+            ];
+        }
+    } catch (Throwable $reconcile_error) {
+        if ($conn->errno) {
+            $conn->rollback();
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -261,6 +333,19 @@ if (!$booking) {
             margin-bottom: 20px;
         }
 
+        .payment-message {
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .payment-message.success { background: #d4edda; color: #155724; }
+        .payment-message.error { background: #f8d7da; color: #721c24; }
+        .btn-esewa { background: #60bb46; color: white; }
+        .btn-demo { background: #343a40; color: white; }
+        .payment-note { color: #666; font-size: .85rem; margin: 8px 0 16px; line-height: 1.4; }
+
         .price-row {
             display: flex;
             justify-content: space-between;
@@ -432,6 +517,12 @@ if (!$booking) {
             <div class="sidebar">
                 <h3>Summary</h3>
 
+                <?php if ($payment_flash): ?>
+                    <div class="payment-message <?php echo $payment_flash['type'] === 'success' ? 'success' : 'error'; ?>">
+                        <?php echo htmlspecialchars($payment_flash['message']); ?>
+                    </div>
+                <?php endif; ?>
+
                 <span class="status-badge status-<?php echo strtolower($booking['status']); ?>">
                     Status: <?php echo ucfirst($booking['status']); ?>
                 </span>
@@ -454,6 +545,29 @@ if (!$booking) {
                         <span>Rs. <?php echo number_format($booking['total_amount'], 2); ?></span>
                     </div>
                 </div>
+
+                <?php if ($booking['payment_status'] !== 'paid' && strtolower($booking['status']) !== 'cancelled'): ?>
+                    <form method="post" action="../payment/esewa_initiate.php">
+                        <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(payment_csrf_token()); ?>">
+                        <button type="submit" class="btn btn-esewa">
+                            <i class="fas fa-wallet"></i> Pay with eSewa
+                        </button>
+                    </form>
+                    <form method="post" action="../payment/demo_initiate.php">
+                        <input type="hidden" name="booking_id" value="<?php echo (int) $booking['booking_id']; ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(payment_csrf_token()); ?>">
+                        <button type="submit" class="btn btn-demo">
+                         Pay
+                        </button>
+                    </form>
+                    <p class="payment-note">Secure sandbox checkout. Your booking is confirmed only after the selected provider verifies the payment.</p>
+                <?php elseif ($booking['payment_status'] === 'paid' && $latest_payment): ?>
+                    <p class="payment-note">
+                        <?php echo htmlspecialchars(ucfirst($latest_payment['provider'] ?? 'Payment')); ?> transaction:
+                        <strong><?php echo htmlspecialchars($latest_payment['transaction_id'] ?? 'Verified'); ?></strong>
+                    </p>
+                <?php endif; ?>
 
                 <?php if (strtolower($booking['status']) !== 'cancelled'): ?>
                     <a href="cancel_booking.php?booking_id=<?php echo $booking['booking_id']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this booking?');">

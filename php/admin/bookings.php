@@ -65,10 +65,16 @@ $bookings_sql = "SELECT b.*,
                  c.phone as customer_phone, 
                  p.package_name, 
                  p.destination, 
-                 p.price 
+                 p.price,
+                 pay.provider,
+                 pay.transaction_id,
+                 pay.provider_status
                  FROM bookings b 
                  JOIN customers c ON b.customer_id = c.customer_id 
                  JOIN packages p ON b.package_id = p.package_id 
+                 LEFT JOIN payments pay ON pay.payment_id = (
+                     SELECT MAX(pay2.payment_id) FROM payments pay2 WHERE pay2.booking_id = b.booking_id
+                 )
                  $where_clause
                  ORDER BY b.booking_date DESC";
 $bookings_result = $conn->query($bookings_sql);
@@ -498,6 +504,11 @@ $stats = $stats_result->fetch_assoc();
                                         <span class="payment-badge payment-<?php echo $booking['payment_status']; ?>">
                                             <?php echo ucfirst($booking['payment_status']); ?>
                                         </span>
+                                        <?php if (!empty($booking['transaction_id'])): ?>
+                                            <br><small><?php echo htmlspecialchars(ucfirst($booking['provider'])); ?>: <?php echo htmlspecialchars($booking['transaction_id']); ?></small>
+                                        <?php elseif (!empty($booking['provider_status'])): ?>
+                                            <br><small><?php echo htmlspecialchars(ucfirst($booking['provider'])); ?>: <?php echo htmlspecialchars($booking['provider_status']); ?></small>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="action-btns">
                                         <button class="btn btn-edit" onclick="editBooking(<?php echo $booking['booking_id']; ?>, '<?php echo $booking['status']; ?>', '<?php echo $booking['payment_status']; ?>')">

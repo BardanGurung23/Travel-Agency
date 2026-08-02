@@ -44,6 +44,26 @@ CREATE TABLE IF NOT EXISTS bookings (
         REFERENCES packages(package_id) ON DELETE RESTRICT
 );
 
+CREATE TABLE IF NOT EXISTS payments (
+    payment_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    booking_id INT UNSIGNED NOT NULL,
+    provider VARCHAR(30) NOT NULL DEFAULT 'esewa',
+    purchase_order_id VARCHAR(100) NOT NULL UNIQUE,
+    pidx VARCHAR(100) DEFAULT NULL UNIQUE,
+    transaction_id VARCHAR(100) DEFAULT NULL UNIQUE,
+    amount_paisa BIGINT UNSIGNED NOT NULL,
+    status ENUM('initiated', 'pending', 'completed', 'failed', 'cancelled', 'expired', 'refunded') NOT NULL DEFAULT 'initiated',
+    provider_status VARCHAR(50) DEFAULT NULL,
+    failure_message VARCHAR(500) DEFAULT NULL,
+    initiated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_payment_booking FOREIGN KEY (booking_id)
+        REFERENCES bookings(booking_id) ON DELETE CASCADE,
+    INDEX idx_payment_booking (booking_id),
+    INDEX idx_payment_status (status)
+);
+
 CREATE TABLE IF NOT EXISTS admin_users (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
@@ -78,3 +98,14 @@ FROM (
            18000.00, 2, '2026-08-01', '2027-06-30', 30, 'active'
 ) AS seed
 WHERE NOT EXISTS (SELECT 1 FROM packages);
+
+INSERT INTO packages
+    (package_name, destination, description, price, duration_days,
+     available_from, available_to, available_slots, status)
+SELECT
+    'Payment Sandbox Test', 'Sandbox',
+    'A low-value package used only to test the sandbox payment workflow.',
+    20.00, 1, CURRENT_DATE, DATE_ADD(CURRENT_DATE, INTERVAL 1 YEAR), 100, 'active'
+WHERE NOT EXISTS (
+    SELECT 1 FROM packages WHERE package_name = 'Payment Sandbox Test'
+);

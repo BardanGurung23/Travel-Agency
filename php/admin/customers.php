@@ -64,7 +64,11 @@ if (isset($_POST['update_status'])) {
 $search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
 $where_clause = "";
 if (!empty($search)) {
-    $where_clause = "WHERE full_name LIKE '%$search%' OR email LIKE '%$search%' OR phone LIKE '%$search%'";
+    $where_clause = "WHERE CONCAT(c.first_name, ' ', c.last_name) LIKE '%$search%'
+                     OR c.first_name LIKE '%$search%'
+                     OR c.last_name LIKE '%$search%'
+                     OR c.email LIKE '%$search%'
+                     OR c.phone LIKE '%$search%'";
 }
 
 // Get all customers

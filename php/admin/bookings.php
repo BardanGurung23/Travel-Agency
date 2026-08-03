@@ -19,19 +19,28 @@ $error = '';
 // Handle Status Update
 if (isset($_POST['update_status'])) {
     $booking_id = (int)$_POST['booking_id'];
-    $status = $_POST['status'];
-    $payment_status = $_POST['payment_status'];
-    
-    $update_sql = "UPDATE bookings SET status=?, payment_status=? WHERE booking_id=?";
-    $stmt = $conn->prepare($update_sql);
-    $stmt->bind_param("ssi", $status, $payment_status, $booking_id);
-    
-    if ($stmt->execute()) {
-        $success = "Booking updated successfully!";
+    $status = $_POST['status'] ?? '';
+    $payment_status = $_POST['payment_status'] ?? '';
+
+    $allowed_statuses = ['pending', 'confirmed', 'completed', 'cancelled'];
+    $allowed_payment_statuses = ['unpaid', 'paid'];
+
+    if ($booking_id < 1
+        || !in_array($status, $allowed_statuses, true)
+        || !in_array($payment_status, $allowed_payment_statuses, true)) {
+        $error = "Invalid booking or payment status selected.";
     } else {
-        $error = "Error updating booking: " . $conn->error;
+        $update_sql = "UPDATE bookings SET status=?, payment_status=? WHERE booking_id=?";
+        $stmt = $conn->prepare($update_sql);
+        $stmt->bind_param("ssi", $status, $payment_status, $booking_id);
+
+        if ($stmt->execute()) {
+            $success = "Booking updated successfully!";
+        } else {
+            $error = "Error updating booking: " . $stmt->error;
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
 
 // Handle Delete
@@ -560,7 +569,6 @@ $stats = $stats_result->fetch_assoc();
                     <select name="payment_status" id="edit_payment_status" required>
                         <option value="unpaid">Unpaid</option>
                         <option value="paid">Paid</option>
-                        <option value="refunded">Refunded</option>
                     </select>
                 </div>
 

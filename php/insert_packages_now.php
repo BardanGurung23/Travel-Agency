@@ -5,11 +5,7 @@ ini_set('display_errors', 1);
 
 echo "<h1>🚀 INSERTING NEPAL PACKAGES NOW</h1>";
 
-$conn = new mysqli("localhost", "yasmin", "yes123", "travel_agency");
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once __DIR__ . '/connection.php';
 
 // Step 1: Clear any existing packages
 echo "<h3>Step 1: Clearing old data...</h3>";

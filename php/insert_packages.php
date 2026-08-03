@@ -1,6 +1,6 @@
 <?php
 // insert_packages.php
-$conn = new mysqli("localhost", "yasmin", "yes123", "travel_agency");
+require_once __DIR__ . '/connection.php';
 
 // Clear existing
 $conn->query("DELETE FROM packages");

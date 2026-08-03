@@ -6,7 +6,7 @@ ini_set('display_errors', 1);
 
 echo "<h1>📝 Update Package Data</h1>";
 
-$conn = new mysqli("localhost", "yasmin", "yes123", "travel_agency");
+require_once __DIR__ . '/connection.php';
 
 // Update existing packages
 $updates = [

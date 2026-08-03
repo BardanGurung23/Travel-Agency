@@ -1,10 +1,9 @@
-
+<?php
 // login_debug.php - Debug version
 session_start();
+require_once __DIR__ . '/connection.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $conn = new mysqli("localhost", "yasmin", "yes123", "travel_agency");
-    
     $email = $conn->real_escape_string($_POST['email']);
     $password = $_POST['password'];
     
